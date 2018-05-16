@@ -157,11 +157,17 @@ func doInstall(cmdline []string) {
 
 	// Check Go version. People regularly open issues about compilation
 	// failure with outdated Go. This should save them the trouble.
-	if runtime.Version() < "go1.4" && !strings.HasPrefix(runtime.Version(), "devel") {
-		log.Println("You have Go version", runtime.Version())
-		log.Println("go-ethereum requires at least Go version 1.4 and cannot")
-		log.Println("be compiled with an earlier version. Please upgrade your Go installation.")
-		os.Exit(1)
+	if !strings.Contains(runtime.Version(), "devel") {
+		// Figure out the minor version number since we can't textually compare (1.10 < 1.9)
+		var minor int
+		fmt.Sscanf(strings.TrimPrefix(runtime.Version(), "go1."), "%d", &minor)
+
+		if minor < 9 {
+			log.Println("You have Go version", runtime.Version())
+			log.Println("go-dubaicoin requires at least Go version 1.4 and cannot")
+			log.Println("be compiled with an earlier version. Please upgrade your Go installation.")
+			os.Exit(1)
+		}
 	}
 	// Compile packages given as arguments, or everything if there are no arguments.
 	packages := []string{"./..."}
@@ -354,7 +360,7 @@ func doArchive(cmdline []string) {
 	var (
 		env      = build.Env()
 		base     = archiveBasename(*arch, env)
-		gdbix     = "gdbix-" + base + ext
+		gdbix    = "gdbix-" + base + ext
 		alltools = "gdbix-alltools-" + base + ext
 	)
 	maybeSkipArchive(env)
@@ -654,7 +660,7 @@ func doWindowsInstaller(cmdline []string) {
 	// first section contains the gdbix binary, second section holds the dev tools.
 	templateData := map[string]interface{}{
 		"License":  "COPYING",
-		"Gdbix":     gethTool,
+		"Gdbix":    gethTool,
 		"DevTools": devTools,
 	}
 	build.Render("build/nsis.gdbix.nsi", filepath.Join(*workdir, "gdbix.nsi"), 0644, nil)
