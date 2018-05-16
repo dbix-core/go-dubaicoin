@@ -116,6 +116,7 @@ func executablePath(name string) string {
 }
 
 func main() {
+	fmt.Printf("GOBIN: %s\n", GOBIN)
 	log.SetFlags(log.Lshortfile)
 
 	if _, err := os.Stat(filepath.Join("build", "ci.go")); os.IsNotExist(err) {
@@ -162,7 +163,7 @@ func doInstall(cmdline []string) {
 		var minor int
 		fmt.Sscanf(strings.TrimPrefix(runtime.Version(), "go1."), "%d", &minor)
 
-		if minor < 9 {
+		if minor < 4 {
 			log.Println("You have Go version", runtime.Version())
 			log.Println("go-dubaicoin requires at least Go version 1.4 and cannot")
 			log.Println("be compiled with an earlier version. Please upgrade your Go installation.")
@@ -220,17 +221,21 @@ func buildFlags(env build.Environment) (flags []string) {
 		flags = append(flags, "-tags", "opencl")
 	}
 
+	var minor int
+	fmt.Sscanf(strings.TrimPrefix(runtime.Version(), "go1."), "%d", &minor)
+
 	// Since Go 1.5, the separator char for link time assignments
 	// is '=' and using ' ' prints a warning. However, Go < 1.5 does
 	// not support using '='.
 	sep := " "
-	if runtime.Version() > "go1.5" || strings.Contains(runtime.Version(), "devel") {
+	if if minor > 5 || strings.Contains(runtime.Version(), "devel") {
 		sep = "="
 	}
 	// Set gitCommit constant via link-time assignment.
 	if env.Commit != "" {
 		flags = append(flags, "-ldflags", "-X main.gitCommit"+sep+env.Commit)
 	}
+	fmt.Printf("FLAGS: %s\n", flags)
 	return flags
 }
 
