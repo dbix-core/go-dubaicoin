@@ -228,7 +228,7 @@ func buildFlags(env build.Environment) (flags []string) {
 	// is '=' and using ' ' prints a warning. However, Go < 1.5 does
 	// not support using '='.
 	sep := " "
-	if if minor > 5 || strings.Contains(runtime.Version(), "devel") {
+	if minor > 5 || strings.Contains(runtime.Version(), "devel") {
 		sep = "="
 	}
 	// Set gitCommit constant via link-time assignment.
